@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset='utf-8' />
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.1.1/mapbox-gl.js'></script>
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.1.1/mapbox-gl.css' rel='stylesheet' />
+
+<style>
+body {
+    color: rgb(142, 145, 137);
+    font: 400 15px/22px 'Calibri', 'Source Sans Pro', Sans-serif;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  * {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+  }
+
+  .sidebar {
+    position: absolute;
+    width: 20%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    border-right: 1px solid rgba(0, 0, 0, 0.25);
+  }
+
+  .pad2 {
+    padding: 20px;
+  }
+
+  .map {
+    position: absolute;
+    left: 20%;
+    width: 80%;
+    top: 0;
+    bottom: 0;
+  }
+
+  h1 {
+    font-size: 22px;
+    margin: 0;
+    font-weight: 400;
+    line-height: 20px;
+    padding: 20px 2px;
+  
+  }
+
+
+  a {
+    color: rgb(153, 187, 90);
+    text-decoration: none;
+  }
+
+
+  a:hover {
+    color: #101010;
+  }
+
+/*   #siteslink{
+    color: white;
+  }
+
+   #siteslink:hover{
+    color:rgb(87, 113, 146);
+  } */
+
+  .heading {
+    background:#204D88;
+    color: #fff;
+    border-bottom: 1px solid #eee;
+    min-height: 60px;
+    line-height: 60px;
+    padding: 0 10px;
+  }
+
+  .listings {
+    height: 100%;
+    overflow: auto;
+    padding-bottom: 60px;
+  }
+
+  .listings .item {
+    display: block;
+    border-bottom: 1px solid #eee;
+    padding: 10px;
+    text-decoration: none;
+  }
+
+  .listings .item:last-child {
+    border-bottom: none;
+  }
+
+  .listings .item .title {
+    display: block;
+    color: rgb(153, 187, 90);
+    font-weight: 700;
+  }
+
+  .listings .item .title small {
+    font-weight: 400;
+  }
+
+  .listings .item.active .title,
+  .listings .item .title:hover {
+    color: #204D88;
+  }
+
+  .listings .item.active {
+    background-color: #f8f8f8;
+  }
+
+  ::-webkit-scrollbar {
+    width: 3px;
+    height: 3px;
+    border-left: 0;
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  ::-webkit-scrollbar-track {
+    background: none;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgb(87, 113, 146);
+    border-radius: 0;
+  }
+  /* Marker tweaks */
+
+  .mapboxgl-popup-close-button {
+    display: none;
+  }
+
+  .mapboxgl-popup-content {
+    font: 400 15px/22px 'Source Sans Pro', 'Helvetica Neue', Sans-serif;
+    padding: 0;
+    width: 400px;
+  }
+
+  .mapboxgl-popup-content-wrapper {
+    padding: 1%;
+  }
+
+  .mapboxgl-popup-content h3 {
+    background: #204D88;
+    color: #fff;
+    margin: 0;
+    display: block;
+    padding: 10px;
+    border-radius: 3px 3px 0 0;
+    font-weight: 700;
+    margin-top: -15px;
+  }
+
+  .mapboxgl-popup-content h4 {
+    margin: 0;
+    display: block;
+    padding: 10px;
+    font-weight: 400;
+    margin: 0;
+  }
+
+  .mapboxgl-popup-content div {
+    padding: 10px;
+  }
+
+  .mapboxgl-container .leaflet-marker-icon {
+    cursor: pointer;
+  }
+
+  .mapboxgl-popup-anchor-top > .mapboxgl-popup-content {
+          margin-top: 15px;
+        }
+
+  .mapboxgl-popup-anchor-top > .mapboxgl-popup-tip {
+    border-bottom-color: #91c949;
+  }
+
+</style>
+
+</head>
+
+<body>
+<div class='sidebar'>
+    <div class='heading'>
+         <h1>Acres for America Sites</h1>
+    </div>
+    <div id='listings' class='listings'></div>
+    </div>
+            
+    <div id='map' class='map'> </div>
+
+<script>
+    //This will let you use the .remove() function later on
+    //For the .remove() method to work in older browsers
+    if (!('remove' in Element.prototype)) {
+    Element.prototype.remove = function() {
+        if (this.parentNode) {
+         this.parentNode.removeChild(this);
+         }
+    };
+    }
+
+     mapboxgl.accessToken = 'pk.eyJ1IjoibmZ3ZiIsImEiOiJjanhuZXVhNDQwZHloM2lsMzJseWlndW5lIn0.p_Zb0O49DVmCdIKFiSB6dA';
+    
+     // This adds the map to your page
+    var map = new mapboxgl.Map({
+     // container id specified in the HTML
+     container: 'map',
+    // style URL
+     style: 'mapbox://styles/nfwf/cjz31nioc2xv31cmayvrz1c8q',
+     // initial position in [lon, lat] format
+     center: [-97.134593, 40.488087],
+    // initial zoom
+     zoom:3.7,
+     maxZoom: 10 //setting the max zoom in
+    });
+    var sites = {
+   "type": "FeatureCollection",
+   "features": [
+  {
+    "type": "Feature",
+    "geometry": {
+       "type": "Point",
+       "coordinates":  [ -110.64865,43.703082 ]
+    },
+    "properties": {
+    "Y_F":"Yes",
+    "Name":"Antelope Flats - Grant Teton National Park",
+    "Hyperlink":"https://www.gtnpf.org/achievements/state-lands/",
+    "Managed":"Grand Teton National Park",
+    "Description":"Located in the heart of Grand Teton National Park, the Antelope Flats property provides an incredibly scenic view of the Jackson Hole Valley. Pronghorn, bison and elk use these flats during migration, as do wolves, coyotes and other predators searching for food. For an unforgettable experience, you can either drive or ride a bike around the flats, to view wildlife.",
+    "EZG":53683
+    }
+  },
+  {
+    "type": "Feature",
+    "geometry": {
+       "type": "Point",
+       "coordinates":  [ -86.220547,44.521843 ]
+    },
+    "properties": {
+    "Y_F":"Yes",
+    "Name":"Arcadia Dunes: The C.S. Mott Nature Preserve",
+    "Hyperlink":"https://www.gtrlc.org/recreation-events/preserve/arcadia-dunes/",
+    "Managed":"Grand Traverse Regional Land Conservancy",
+    "Description":"Overlooking Lake Michigan, the C.S. Mott Nature Preserve at Arcadia Dunes includes over 15 miles of trail to explore dunes, forests and many other landscapes. Adjacent working farms have also been permanently protected, ensuring the longevity of this area's rich agricultural heritage. This incredibly diverse preserve provides a wide range of recreation opportunities and experiences from hiking to birding to mountain biking.",
+    "EZG":5200
+    }
+  },
+  {
+    "type": "Feature",
+    "geometry": {
+       "type": "Point",
+       "coordinates":  [ -118.046572,33.695798 ]
+    },
+    "properties": {
+    "Y_F":"Yes",
+    "Name":"Bolsa Chica Ecological Reserve",
+    "Hyperlink":"https://www.wildlife.ca.gov/Lands/Places-to-Visit/Bolsa-Chica-ER",
+    "Managed":"California Department of Fish and Wildlife",
+    "Description":"Sitting on the edge of Huntington Beach, California, the Bolsa Chica Ecological Reserve is perfect for wildlife viewing and hiking. Beautiful wooden walkways and 4 miles of trails stretch across the 1,341-acre estuary, providing opportunities to see many different species of plants and animals, including the peregrine falcon, California legless lizard, cottontail rabbit and many more. ",
+    "EZG":29068
+    }
+  },
+  {
+    "type": "Feature",
+    "geometry": {
+       "type": "Point",
+       "coordinates":  [ -91.978585,31.624051 ]
+    },
+    "properties": {
+    "Y_F":"Yes",
+    "Name":"Catahoula National Wildlife Refuge",
+    "Hyperlink":"https://www.fws.gov/refuge/catahoula/",
+    "Managed":"USDA U.S. Fish and Wildlife Service",
+    "Description":"The Catahoula National Wildlife Refuge, which borders the Catahoula Lake in Louisiana, is best known for its plentiful population of migrating waterfowl. At one point, 75,000 ducks were recorded in a single day. Hunting, fishing, boating, and photography are all great family activities in the Catahoula.  ",
+    "EZG":4887
+    }
+  },
+  {
+    "type": "Feature",
+    "geometry": {
+       "type": "Point",
+       "coordinates":  [ -84.52599,32.479012 ]
+    },
+    "properties": {
+    "Y_F":"Yes",
+    "Name":"Chattahoochee Fall Line Wildlife Management Area",
+    "Hyperlink":"https://georgiawildlife.com/new-tract-officially-opens-chattahoochee-fall-line-wma",
+    "Managed":"Georgia Department of Natural Resources: Wildlife Resources Division",
+    "Description":"The Chattahoochee Fall Line Wildlife Management Area (WMA) encompasses 8,000 acres of public land right outside the city of Columbus, Georgia. Here you can explore the fascinating longleaf pine ecosystem and spot rare, vulnerable species such as the red-cockaded woodpecker and gopher tortoise. The WMA offers great opportunities for small- and big-game hunting, hiking, fishing, camping and bird watching. ",
+    "EZG":28949
+    }
+  },
+  {
+    "type": "Feature",
+    "geometry": {
+       "type": "Point",
+       "coordinates":  [ -75.304914,40.883398 ]
+    },
+    "properties": {
+    "Y_F":"Yes",
+    "Name":"Cherry Valley National Wildlife Refuge",
+    "Hyperlink":"https://www.fws.gov/refuge/cherry_valley/",
+    "Managed":"USFS - National Wildlife Refuge | Pennsylvania",
+    "Description":"Cherry Valley National Wildlife Refuge is located in eastern Pennsylvania, just two hours outside New York and Philadelphia. Containing both forests and wetlands, Cherry Valley is a pleasant refuge to enjoy nature and spot wildlife such as the bog turtle or black bear. There are several easy trails, making hiking and cross-country skiing a fun activity with friends or family.",
+    "EZG":40227
+    }
+  },
+  {
+    "type": "Feature",
+    "geometry": {
+       "type": "Point",
+       "coordinates":  [ -93.923138,36.483546 ]
+    },
+    "properties": {
+    "Y_F":"Yes",
+    "Name":"Devil's Eyebrow Natural Area",
+    "Hyperlink":"http://www.naturalheritage.com/natural-areas/devil-39-s-eyebrow-natural-area",
+    "Managed":"Arkansas Natural Heritage Commission",
+    "Description":"Located in Arkansas on the border of Missouri, the Devil's Eyebrow Natural Area includes several beautiful hiking trails. Devil's Eyebrow contains more than 3,000 acres of pristine forested land and some of the rarest plant species in Arkansas. The main trail offers a strenuous, 11.8-mile hike, several smaller, easier trails deviate off the main one. Hunting is also allowed for some species.",
+    "EZG":34284
+    }
+  },
+
+  {
+    "type": "Feature",
+    "geometry": {
+       "type": "Point",
+       "coordinates":  [ -68.289975,45.170027 ]
+    },
+    "properties": {
+    "Y_F":"Yes",
+    "Name":"Downeast Lakes Forestry Partnership",
+    "Hyperlink":"http://www.cooperativeconservation.org/viewproject.aspx?id=12",
+    "Managed":"Downeast Lakes Land Trust",
+    "Description":"Accounting for 25 percent of the total land in Washington County, Maine, the Downeast Lakes Partnership protects more than 1,500 miles of stream and river shoreline, 60 lakes and 54,000 acres of wetlands. These habitats are home to 130 species of birds, including eight active bald eagle nests and 23 different species of warblers. The easement lands are perfect for hunting, fishing, hiking and bird watching during the warmer months and snowmobiling in the winter.",
+    "EZG":17439
+    }
+  },
+  {
+    "type": "Feature",
+    "geometry": {
+       "type": "Point",
+       "coordinates":  [ -87.56442,41.655023 ]
+    },
+    "properties": {
+    "Y_F":"Yes",
+    "Name":"Hegewisch Marsh Park",
+    "Hyperlink":"https://www.chicagoparkdistrict.com/parks-facilities/hegewisch-marsh-park",
+    "Managed":"Chicago Park District",
+    "Description":"If you want to turn back time and learn what the southern part of Chicago was like before the Industrial revolution, visit Hegewisch Marsh Park. More than 130 acres of beautiful, public land hosts unique species such as the iconic bald eagle and the endangered Blanding's turtle. Despite being so close to downtown Chicago, the park contains several different habitats, including marshes, woodlands and prairies, making it a great place to go for a stroll with friends and family.",
+    "EZG":27538
+    }
+  },
+  {
+    "type": "Feature",
+    "geometry": {
+       "type": "Point",
+       "coordinates":  [ -73.820827,40.616932 ]
+    },
+    "properties": {
+    "Y_F":"Yes",
+    "Name":"Jamaica Bay Park",
+    "Hyperlink":"https://www.nycgovparks.org/parks/jamaica-bay-park",
+    "Managed":"National Park Service Gateway National Recreation Area",
+    "Description":"Escaping the rush and crush of the Big Apple couldn't be easier, thanks to Jamaica Bay Park. Sitting just an hour from downtown Manhattan, Jamaica Bay offers more than 18,000 acres of wetlands to explore between Brooklyn and Queens. This undeveloped bay includes several islands, waterways and meadowlands that are home to a rich community of birds, butterflies, fish and other wildlife. Due to its unique location, Jamaica Bay is both a very important location for migrating waterfowl as well as a great place for city dwellers to connect with nature. Fun activities here range from horseback riding to boating and hiking.",
+    "EZG":28984
+    }
+  },
+  {
+    "type": "Feature",
+    "geometry": {
+       "type": "Point",
+       "coordinates":  [ -93.654239,36.415133 ]
+    },
+    "properties": {
+    "Y_F":"Yes",
+    "Name":"Kings River Preserve",
+    "Hyperlink":"https://www.nature.org/en-us/get-involved/how-to-help/places-we-protect/kings-river/",
+    "Managed":"The Nature Conservancy",
+    "Description":"The King River Preserve includes 10.5 miles of streamside land along the King River in Arkansas. Purchased to help maintain the water quality in the King River, which flows into the Table Rock Lake and White River, the river is home to many different fish, turtles, mussels and insects. It is a great place to go fishing, kayaking and swimming.",
+    "EZG":40523
+    }
+  },
+  {
+    "type": "Feature",
+    "geometry": {
+       "type": "Point",
+       "coordinates":  [ -92.071254,46.108876 ]
+    },
+    "properties": {
+    "Y_F":"Yes",
+    "Name":"Namekagon Barrens Wildlife Area",
+    "Hyperlink":"https://dnr.wi.gov/topic/lands/WildlifeAreas/namekagon.html",
+    "Managed":"Wisconsin Department of Natural Resources",
+    "Description":"If you are lucky, you can see the flamboyant sharp-tailed grouse dancing in the rare pine barren habitats in the Namekagon Barrens Wildlife Area in northwest Wisconsin. You may also run across wild turkeys, deer, bears, upland sandpipers, brown thrashers or badgers. In the summer, you might enjoy hiking, fishing, and canoeing. In the colder months, visitors can enjoy cross-country skiing, snowshoeing and snowmobiling.",
+    "EZG":33724
+    }
+  },
+  {
+    "type": "Feature",
+    "geometry": {
+       "type": "Point",
+       "coordinates":  [ -109.969,42.779 ]
+    },
+    "properties": {
+    "Y_F":"Yes",
+    "Name":"Sommers/Grindstone Conservation Easement",
+    "Hyperlink":"https://wgfd.wyo.gov/Public-Access/Public-Access-Areas/Green-River-Sommer-s-Grindstone",
+    "Managed":"Wyoming Game and Fish Department",
+    "Description":"The Green River Sommers/Grindstone Public Access Area in western Wyoming encompasses some of the country's most spectacular wild areas. There are plenty of opportunities to see large animals like wolves, moose and pronghorn. Fishing in the area is also permitted during certain times of the year. The property is closed at certain times of the year, so check ahead. ",
+    "EZG":3536
+    }
+  },
+  {
+    "type": "Feature",
+    "geometry": {
+       "type": "Point",
+       "coordinates":  [ -84.482803,32.853544 ]
+    },
+    "properties": {
+    "Y_F":"Yes",
+    "Name":"Sprewell Bluff Wildlife Management Area",
+    "Hyperlink":"https://georgiawildlife.com/sprewell-bluff-wma-west",
+    "Managed":"Georgia Department of Natural Resources",
+    "Description":"Conveniently located less than two hours outside of Atlanta, the Sprewell Bluff runs along the beautiful Flint River. There are plenty of opportunities for hunting deer, turkey and other small game. Fishing and camping are also popular recreational activities within the Bluff.",
+    "EZG":50681
+    }
+  },
+  {
+    "type": "Feature",
+    "geometry": {
+       "type": "Point",
+       "coordinates":  [ -114.5911229,48.6710771 ]
+    },
+    "properties": {
+    "Y_F":"Yes",
+    "Name":" Stillwater State Forest",
+    "Hyperlink":"http://fwp.mt.gov/news/newsReleases/fishAndWildlife/nr_1150.html",
+    "Managed":"Montana Fish, Wildlife & Parks",
+    "Description":"The Stillwater State Forest protects beautiful forestland north of Whitefish, Montana and west of Glacier National Park. This area is vital for the survival of the bull trout, westslope cutthroat trout and the Canada lynx. In addition to providing habitat for native wildlife, the state forest offers numerous opportunities to fish, hunt, hike, camp, and ride snowmobiles and horses!",
+    "EZG":57143
+    }
+  },
+
+  {
+    "type": "Feature",
+    "geometry": {
+       "type": "Point",
+       "coordinates":  [ -115.945833,47.247967 ]
+    },
+    "properties": {
+    "Y_F":"Yes",
+    "Name":"St. Joe Basin Conservation Initiative",
+    "Hyperlink":"https://visitnorthidaho.com/activity/st-joe-river/",
+    "Managed":"Idaho Department of Lands",
+    "Description":"Known as 'Shadowy St. Joe,' the St. Joe River winds from Lake Coeur d'Alene to southeastern Idaho. The river's basin is chock-full of wildlife, including bears, elk, moose and ducks. It's a great place to take your family for a weekend camping trip. There are great opportunities to camp, hike, fish, hunt and boat on class 2-4 rapids!",
+    "EZG":18055
+    }
+  },
+  {
+    "type": "Feature",
+    "geometry": {
+       "type": "Point",
+       "coordinates":  [ -82.078904,37.887348 ]
+    },
+    "properties": {
+    "Y_F":"Yes",
+    "Name":"Tomblin Wildlife Management Area",
+    "Hyperlink":"https://wvdnr.wordpress.com/2019/05/02/tomblin-wma-preserves-hunting-lands-and-habitat-for-dnr-elk-restoration-program/",
+    "Managed":"West Virginia Department of Natural Resources",
+    "Description":"The Tomblin Wildlife Management Area in southern West Virginia is the home of elk reintroduction in West Virginia. Deer, turkey, bear, rabbits, grouse and other species are plentiful, so hunting is an important part of the management of this beautiful wilderness area.",
+    "EZG":50703
+    }
+  },
+  {
+    "type": "Feature",
+    "geometry": {
+       "type": "Point",
+       "coordinates":  [ -71.111667,44.803075 ]
+    },
+    "properties": {
+    "Y_F":"Yes",
+    "Name":"Umbagog National Wildlife Refuge",
+    "Hyperlink":"https://www.fws.gov/refuge/umbagog/",
+    "Managed":"USFS - National Wildlife Refuge | Maine and New Hampshire",
+    "Description":"The Umbagog National Wildlife Refuge is located on the border between New Hampshire and Maine. With some of the most beautiful wetlands in the country, an area inside of the refuge, Harper's Meadow, was named as a Floating Island National Natural Landmark by the Secretary of the Interior in 1972. Hiking, hunting, fishing, boating and camping are among the most popular activities in and around Lake Umbagog. An easy 1.2 mile trail offers great opportunities to view moose, waterfowl and other wildlife.",
+    "EZG":33913
+    }
+  },
+  {
+    "type": "Feature",
+    "geometry": {
+       "type": "Point",
+       "coordinates":  [ -93.680856,46.538483 ]
+    },
+    "properties": {
+    "Y_F":"Yes",
+    "Name":"Upper Mississippi Forestland Easement",
+    "Hyperlink":"https://www.dnr.state.mn.us/forestlegacy/uppermiss_upm/index.html",
+    "Managed":"Minnesota Department of Natural Resources",
+    "Description":"The Upper Mississippi Forestland Easement protects nearly 190,000 acres of working forestland in northern Minnesota, an incredibly diverse landscape home to deer, black bears, wolves, eagles and migratory songbirds. In the summer, you can hike, view wildlife, fish and ride ATVs. In the winter, you can cross-country ski, snowshoe and snowmobile.",
+    "EZG":3229
+    }
+  },
+  {
+    "type": "Feature",
+    "geometry": {
+       "type": "Point",
+       "coordinates":  [ -79.044608,33.721922 ]
+    },
+    "properties": {
+    "Y_F":"Yes",
+    "Name":"Waccamaw River",
+    "Hyperlink":"https://coastallandtrust.org/3000-acres-saved-on-the-waccamaw-river/",
+    "Managed":"North Carolina Wildlife Resources Commission",
+    "Description":"The Waccamaw River is a haven for indigenous plant and animal species like the bald cypress, Swainson's warbler, wood stork and swallow-tailed kite. There are plentiful opportunities to recreate on the river including hunting, fishing, boating and hiking around the beautiful cypress and hardwood forests.",
+    "EZG":57314
+    }
+  }
+]
+}
+
+
+  // This adds the data to the map
+  map.on('load', function (e) {
+    // Add the data to your map as a layer
+    map.addLayer({
+      "id": "locations", //referenced later in on.click
+      "type": "symbol",
+      // Add a GeoJSON source containing place coordinates and information.
+      "source": {
+        "type": "geojson",
+        "data": sites
+      },
+      "layout": {
+        "icon-image": "marker-15",
+        "icon-allow-overlap": true,
+      }
+    });
+    // Initialize the list
+    buildLocationList(sites);
+  });
+
+
+  map.on('click', function(e) {
+    var features = map.queryRenderedFeatures(e.point, {
+      layers: ['locations']
+    });
+
+    if (features.length) {
+      var clickedPoint = features[0];
+      // 1. Fly to the point
+      flyToSite(clickedPoint);
+
+      // 2. Close all other popups and display popup for clicked site
+      createPopUp(clickedPoint);
+
+      // 3. Highlight listing in sidebar (and remove highlight for all other listings)
+     var activeItem = document.getElementsByClassName('active');
+      if (activeItem[0]) {
+        activeItem[0].classList.remove('active');
+      }
+
+      var selectedFeature = clickedPoint.properties.Name;
+
+      for (var i = 0; i < sites.features.length; i++ ) {
+        if (sites.features[i].properties.Name === selectedFeature) {
+            selectedFeatureIndex = i;
+        }
+      }
+
+      var listing = document.getElementById('listing-' + selectedFeatureIndex);
+      listing.classList.add('active');
+
+    }
+  });
+
+
+  function flyToSite(currentFeature) {
+    map.flyTo({
+      center: currentFeature.geometry.coordinates,
+      zoom: 8
+    });
+  }
+
+
+  function createPopUp(currentFeature) {
+    var popUps = document.getElementsByClassName('mapboxgl-popup');
+    if (popUps[0]) popUps[0].remove();
+
+
+    var popup = new mapboxgl.Popup({closeOnClick: true})
+      .setLngLat(currentFeature.geometry.coordinates)
+      .setHTML('<h3 align="center">' + currentFeature.properties.Name + '</h3>' + 
+        '<h4>' + currentFeature.properties.Description + '<br><br>Learn more about the '
+          + '<a href='+ currentFeature.properties.Hyperlink + ' target="_blank">'  + currentFeature.properties.Name + '</a> </h4>')
+      .addTo(map);
+  }
+
+
+  function buildLocationList(data) {
+    for (i = 0; i < data.features.length; i++) {
+      // Create an array of all the sites and their properties
+      var currentFeature = data.features[i];
+      // Shorten data.feature.properties to just `prop` so we're not
+      // writing this long form over and over again.
+      var prop = currentFeature.properties;
+      // Select the listing container in the HTML
+      var listings = document.getElementById('listings');
+      // Append a div with the class 'item' for each site
+      var listing = listings.appendChild(document.createElement('div'));
+      listing.className = 'item';
+      listing.id = "listing-" + i;
+
+      // Create a new link with the class 'title' for each site
+      // and fill it with the site address //Name
+      var link = listing.appendChild(document.createElement('a'));
+      link.href = '#';
+      link.className = 'title';
+      link.dataPosition = i;
+      link.innerHTML = prop.Name;
+
+      // Create a new div with the class 'details' for each site
+      // and fill it with the managed location and current/future
+      var details = listing.appendChild(document.createElement('div'));
+      details.innerHTML = prop.Managed;
+      if (prop.phone) {
+        details.innerHTML += ' &middot; ' + prop.C_F;
+      }
+
+
+      link.addEventListener('click', function(e) {
+        // Update the currentFeature to the site associated with the clicked link
+        var clickedListing = data.features[this.dataPosition];
+
+        // 1. Fly to the point associated with the clicked link
+        flyToSite(clickedListing);
+
+        // 2. Close all other popups and display popup for clicked site
+        createPopUp(clickedListing);
+
+        // 3. Highlight listing in sidebar (and remove highlight for all other listings)
+        var activeItem = document.getElementsByClassName('active');
+
+        if (activeItem[0]) {
+          activeItem[0].classList.remove('active');
+        }
+        this.parentNode.classList.add('active');
+
+      });
+    }
+  }
+
+// Add zoom and rotation controls to the map.
+map.addControl(new mapboxgl.NavigationControl());
+
+  </script>
+</body>
+
+</html>
